@@ -18,4 +18,10 @@ public class PointValidator {
         }
     }
 
+    public void validateTotalPointAmount(long beforePoint, long usePoint) {
+        if (beforePoint - usePoint < 0) {
+            throw new RuntimeException("사용 후 포인트가 0 미만");
+        }
+    }
+
 }

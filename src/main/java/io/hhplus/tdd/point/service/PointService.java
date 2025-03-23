@@ -36,7 +36,7 @@ public class PointService {
 
     public UserPoint chargePoint(long id, long amount) {
 
-        // 포인트 0 이하인지 체크
+        // 적립할 포인트 0 이하인지 체크
         pointValidator.validatePointAmountBelowZero(amount);
 
         UserPoint userPoint = pointRepository.savePoint(id, amount);
@@ -47,10 +47,14 @@ public class PointService {
 
     public UserPoint usePoint(long id, long amount) {
 
-        // 포인트 0 이하인지 체크
+        // 사용할 포인트 0 이하인지 체크
         pointValidator.validatePointAmountBelowZero(amount);
 
-        UserPoint userPoint = pointRepository.savePoint(id, amount);
+        // 포인트를 썼을 때 0 이상인지 체크
+        UserPoint findUserPoint = pointRepository.findUserPointById(id);
+        pointValidator.validateTotalPointAmount(findUserPoint.point(), amount);
+
+        UserPoint userPoint = pointRepository.savePoint(id, findUserPoint.point() - amount);
         pointRepository.savePointHistory(id, amount, TransactionType.USE);
 
         return userPoint;
