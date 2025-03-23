@@ -2,6 +2,8 @@ package io.hhplus.tdd.point;
 
 import io.hhplus.tdd.database.PointHistoryTable;
 import io.hhplus.tdd.database.UserPointTable;
+import io.hhplus.tdd.point.dto.TransactionType;
+import io.hhplus.tdd.point.dto.UserPoint;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -14,12 +16,12 @@ public class PointRepository {
     private final PointHistoryTable pointHistoryTable;
 
     // 유저의 포인트 조회
-    public UserPoint findUserById(long id) {
+    public UserPoint findUserPointById(long id) {
         return userPointTable.selectById(id);
     }
 
     // 유저의 포인트 히스토리 조회
-    public List<PointHistory> findHistoryById(long id) {
+    public List<PointHistory> findPointHistoryById(long id) {
         return pointHistoryTable.selectAllByUserId(id);
     }
 
