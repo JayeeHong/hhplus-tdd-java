@@ -6,6 +6,8 @@ import io.hhplus.tdd.point.dto.TransactionType;
 import io.hhplus.tdd.point.dto.UserPoint;
 import io.hhplus.tdd.point.validate.PointValidator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,8 @@ public class PointService {
     private static final Logger log = LoggerFactory.getLogger(PointService.class);
     private final PointRepository pointRepository;
     private final PointValidator pointValidator;
+
+    private final ConcurrentHashMap<Long, ReentrantLock> lockMap = new ConcurrentHashMap<>();
 
     public UserPoint getUserPoint(long id) {
         UserPoint userPoint = pointRepository.findUserPointById(id);
@@ -36,28 +40,48 @@ public class PointService {
 
     public UserPoint chargePoint(long id, long amount) {
 
-        // 적립할 포인트 0 이하인지 체크
-        pointValidator.validatePointAmountBelowZero(amount);
+        lockMap.putIfAbsent(id, new ReentrantLock());
+        ReentrantLock lock = lockMap.get(id);
 
-        UserPoint userPoint = pointRepository.savePoint(id, amount);
-        pointRepository.savePointHistory(id, amount, TransactionType.CHARGE);
+        lock.lock();
 
-        return userPoint;
+        try {
+            // 적립할 포인트 0 이하인지 체크
+            pointValidator.validatePointAmountBelowZero(amount);
+
+            UserPoint userPoint = pointRepository.savePoint(id, amount);
+            pointRepository.savePointHistory(id, amount, TransactionType.CHARGE);
+
+            return userPoint;
+        } finally {
+            lock.unlock();
+            lockMap.remove(id);
+        }
+
     }
 
     public UserPoint usePoint(long id, long amount) {
 
-        // 사용할 포인트 0 이하인지 체크
-        pointValidator.validatePointAmountBelowZero(amount);
+        lockMap.putIfAbsent(id, new ReentrantLock());
+        ReentrantLock lock = lockMap.get(id);
 
-        // 포인트를 썼을 때 0 이상인지 체크
-        UserPoint findUserPoint = pointRepository.findUserPointById(id);
-        pointValidator.validateTotalPointAmount(findUserPoint.point(), amount);
+        lock.lock();
 
-        UserPoint userPoint = pointRepository.savePoint(id, findUserPoint.point() - amount);
-        pointRepository.savePointHistory(id, amount, TransactionType.USE);
+        try {
+            // 사용할 포인트 0 이하인지 체크
+            pointValidator.validatePointAmountBelowZero(amount);
 
-        return userPoint;
+            // 포인트를 썼을 때 0 이상인지 체크
+            UserPoint findUserPoint = pointRepository.findUserPointById(id);
+            pointValidator.validateTotalPointAmount(findUserPoint.point(), amount);
+
+            UserPoint userPoint = pointRepository.savePoint(id, findUserPoint.point() - amount);
+            pointRepository.savePointHistory(id, amount, TransactionType.USE);
+
+            return userPoint;
+        } finally {
+            lock.unlock();
+            lockMap.remove(id); // 사용이 끝난 락 삭제
+        }
     }
-
 }
