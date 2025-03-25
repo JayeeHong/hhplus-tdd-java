@@ -30,8 +30,8 @@ class PointControllerTest {
 
     @BeforeEach
     void setUp() {
-        userPoint = new UserPoint(1L, 100L, System.currentTimeMillis());  // 예시 값
-        pointHistory = new PointHistory(1L, 1L, 1000L, TransactionType.CHARGE, System.currentTimeMillis());  // 예시 값
+        userPoint = new UserPoint(1L, 100L, System.currentTimeMillis());
+        pointHistory = new PointHistory(1L, 1L, 1000L, TransactionType.CHARGE, System.currentTimeMillis());
     }
 
     @Test
