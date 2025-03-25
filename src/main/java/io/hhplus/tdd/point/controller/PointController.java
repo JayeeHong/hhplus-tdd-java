@@ -4,6 +4,7 @@ import io.hhplus.tdd.point.PointHistory;
 import io.hhplus.tdd.point.service.PointService;
 import io.hhplus.tdd.point.dto.UserPoint;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,11 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/point")
+@RequestMapping("/api/v1/point")
+@RequiredArgsConstructor
 public class PointController {
 
     private static final Logger log = LoggerFactory.getLogger(PointController.class);
-    private static PointService pointService;
+    private final PointService pointService;
 
     @GetMapping("{id}")
     public UserPoint point(@PathVariable long id) {

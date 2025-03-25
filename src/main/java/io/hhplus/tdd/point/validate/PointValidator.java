@@ -1,7 +1,9 @@
 package io.hhplus.tdd.point.validate;
 
 import io.hhplus.tdd.point.dto.UserPoint;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PointValidator {
 
     public boolean validateUserPoint(UserPoint userPoint) {

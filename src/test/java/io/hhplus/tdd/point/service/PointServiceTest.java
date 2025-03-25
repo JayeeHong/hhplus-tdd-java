@@ -1,4 +1,4 @@
-package io.hhplus.tdd.point;
+package io.hhplus.tdd.point.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,14 +11,14 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.hhplus.tdd.point.PointHistory;
+import io.hhplus.tdd.point.PointRepository;
 import io.hhplus.tdd.point.dto.TransactionType;
 import io.hhplus.tdd.point.dto.UserPoint;
-import io.hhplus.tdd.point.service.PointService;
 import io.hhplus.tdd.point.validate.PointValidator;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -48,8 +48,7 @@ class PointServiceTest {
     }
 
     @Test
-    @DisplayName("유저의 포인트 정상 조회")
-    void getUserPointSuccess() {
+    void 사용자의_포인트를_정상_조회한다() {
         // given
         UserPoint userPoint = new UserPoint(userId, 1L, System.currentTimeMillis());
         when(pointRepository.findUserPointById(userPoint.id())).thenReturn(userPoint);
@@ -66,8 +65,7 @@ class PointServiceTest {
 
     // 유저의 포인트 이력 조회
     @Test
-    @DisplayName("유저의 포인트 이력 조회")
-    void getHistoriesSuccess() {
+    void 사용자의_포인트_히스토리를_정상_조회한다() {
         // given
         List<PointHistory> pointHistories = new ArrayList<>();
         pointHistories.add(
@@ -84,9 +82,8 @@ class PointServiceTest {
     }
 
     @ParameterizedTest
-    @DisplayName("포인트 충전 실패 - 적립할 포인트가 0 이하")
     @ValueSource(longs = {0, -1000})
-    void chargePointFailAmountIsBelowZero(long amount) {
+    void 적립할_포인트가_0이하여서_포인트_적립시_포인트_충전_실패한다(long amount) {
         // given
         doThrow(new RuntimeException("적립할 포인트는 0보다 커야 함"))
             .when(pointValidator).validatePointAmountBelowZero(amount);
@@ -102,9 +99,8 @@ class PointServiceTest {
     }
 
     @ParameterizedTest
-    @DisplayName("포인트 충전 성공")
     @ValueSource(longs = {1, 1000})
-    void chargePointSuccess(long amount) {
+    void 포인트_충전_성공한다(long amount) {
         // given
         UserPoint userPoint = new UserPoint(userId, amount, System.currentTimeMillis());
         doNothing().when(pointValidator).validatePointAmountBelowZero(amount);
@@ -121,9 +117,8 @@ class PointServiceTest {
     }
 
     @ParameterizedTest
-    @DisplayName("포인트 사용 실패 - 사용할 포인트가 0 이하")
     @ValueSource(longs = {0, -1000})
-    void usePointFail_usePointBelowZero(long amount) {
+    void 사용할_포인트가_0이하여서_포인트_사용_실패한다(long amount) {
         // given
         doThrow(new RuntimeException("사용할 포인트는 0보다 커야 함"))
             .when(pointValidator).validatePointAmountBelowZero(amount);
@@ -141,9 +136,8 @@ class PointServiceTest {
     }
 
     @ParameterizedTest
-    @DisplayName("포인트 사용 실패 - 사용 후 포인트가 0 미만")
     @CsvSource(value = {"10,11", "1,1000"}, delimiter = ',')
-    void usePointFail_afterPointBelowZero(long beforePoint, long usePoint) {
+    void 포인트_사용_후_포인트가_0미만이어서_포인트_사용_실패한다(long beforePoint, long usePoint) {
         // given
         UserPoint userPoint = new UserPoint(userId, beforePoint, System.currentTimeMillis());
         doNothing().when(pointValidator).validatePointAmountBelowZero(usePoint);
@@ -165,9 +159,8 @@ class PointServiceTest {
     }
 
     @ParameterizedTest
-    @DisplayName("포인트 사용 성공")
     @CsvSource(value = {"11,10", "1000,1"}, delimiter = ',')
-    void usePointSuccess(long beforePoint, long usePoint) {
+    void 포인트_사용_성공(long beforePoint, long usePoint) {
         // given
         UserPoint userPoint = new UserPoint(userId, beforePoint, System.currentTimeMillis());
         doNothing().when(pointValidator).validatePointAmountBelowZero(usePoint);
