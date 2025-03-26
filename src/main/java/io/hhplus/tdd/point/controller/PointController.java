@@ -23,7 +23,7 @@ public class PointController {
     private final PointService pointService;
 
     @GetMapping("{id}")
-    public UserPoint point(@PathVariable long id) {
+    public UserPoint point(@PathVariable("id") long id) {
         log.info("포인트 조회 요청: id={}", id);
         return pointService.getUserPoint(id);
     }
@@ -35,13 +35,13 @@ public class PointController {
     }
 
     @PatchMapping("{id}/charge")
-    public UserPoint charge(@PathVariable long id, @RequestBody long amount) {
+    public UserPoint charge(@PathVariable("id") long id, @RequestBody long amount) {
         log.info("포인트 충전: id={} amount={}", id, amount);
         return pointService.chargePoint(id, amount);
     }
 
     @PatchMapping("{id}/use")
-    public UserPoint use(@PathVariable long id, @RequestBody long amount) {
+    public UserPoint use(@PathVariable("id") long id, @RequestBody long amount) {
         log.info("포인트 사용: id={} amount={}", id, amount);
         return pointService.usePoint(id, amount);
     }

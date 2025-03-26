@@ -4,9 +4,11 @@ import io.hhplus.tdd.point.PointHistory;
 import io.hhplus.tdd.point.dto.TransactionType;
 import io.hhplus.tdd.point.dto.UserPoint;
 import io.hhplus.tdd.point.service.PointService;
+import io.hhplus.tdd.point.validate.PointValidator;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -23,6 +25,7 @@ class PointControllerTest {
 
     @Autowired private MockMvc mockMvc;
 
+    @Mock private PointValidator pointValidator;
     @MockBean private PointService pointService;
 
     private UserPoint userPoint;
@@ -40,7 +43,7 @@ class PointControllerTest {
         given(pointService.getUserPoint(1L)).willReturn(userPoint);
 
         // when, then
-        mockMvc.perform(get("/api/v1/point/1"))
+        mockMvc.perform(get("/api/v1/point/{id}", 1L))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1L))
             .andExpect(jsonPath("$.point").value(100L));
@@ -56,7 +59,7 @@ class PointControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].id").value(1L))
             .andExpect(jsonPath("$[0].amount").value(1000L))
-            .andExpect(jsonPath("$[0].type").value(TransactionType.CHARGE));
+            .andExpect(jsonPath("$[0].type").value("CHARGE"));
 
         verify(pointService, times(1)).getHistory(1L);
     }
