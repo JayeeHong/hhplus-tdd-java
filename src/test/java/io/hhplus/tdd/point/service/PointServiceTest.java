@@ -81,7 +81,7 @@ class PointServiceTest {
             new PointHistory(1L, userId, 1L, TransactionType.CHARGE, System.currentTimeMillis()));
         pointHistories.add(
             new PointHistory(2L, userId, 1L, TransactionType.USE, System.currentTimeMillis()));
-        when(pointRepository.findPointHistoryById(userId)).thenReturn(pointHistories);
+        given(pointRepository.findPointHistoryById(userId)).willReturn(pointHistories);
 
         // when
         List<PointHistory> findHistories = pointService.getHistory(userId);
@@ -92,13 +92,13 @@ class PointServiceTest {
 
     @ParameterizedTest
     @ValueSource(longs = {0, -1000})
-    void 적립할_포인트가_0이하여서_포인트_적립시_포인트_충전_실패한다(long amount) {
+    void 적립할_포인트가_0이하이면_포인트_충전_실패한다(long amount) {
         // given
-        doThrow(new RuntimeException("적립할 포인트는 0보다 커야 함"))
+        doThrow(new IllegalArgumentException("적립할 포인트는 0보다 커야 함"))
             .when(pointValidator).validatePointAmountBelowZero(amount);
 
         // when, then
-        assertThrows(RuntimeException.class, () -> pointService.chargePoint(userId, amount));
+        assertThrows(IllegalArgumentException.class, () -> pointService.chargePoint(userId, amount));
         // validatePointAmountBelowZero 호출 했음을 검증
         verify(pointValidator).validatePointAmountBelowZero(amount);
         // pointRepository.savePoint 호출하지 않았음을 검증
@@ -109,11 +109,11 @@ class PointServiceTest {
 
     @ParameterizedTest
     @ValueSource(longs = {1, 1000})
-    void 포인트_충전_성공한다(long amount) {
+    void 충전할_포인트가_0보다_크면_충전_성공한다(long amount) {
         // given
         UserPoint userPoint = new UserPoint(userId, amount, System.currentTimeMillis());
         doNothing().when(pointValidator).validatePointAmountBelowZero(amount);
-        when(pointRepository.savePoint(userId, amount)).thenReturn(userPoint);
+        given(pointRepository.savePoint(userId, amount)).willReturn(userPoint);
 
         // when
         UserPoint chargeUserPoint = pointService.chargePoint(userId, amount);
@@ -129,11 +129,11 @@ class PointServiceTest {
     @ValueSource(longs = {0, -1000})
     void 사용할_포인트가_0이하여서_포인트_사용_실패한다(long amount) {
         // given
-        doThrow(new RuntimeException("사용할 포인트는 0보다 커야 함"))
+        doThrow(new IllegalArgumentException("사용할 포인트는 0보다 커야 함"))
             .when(pointValidator).validatePointAmountBelowZero(amount);
 
         // when, then
-        assertThrows(RuntimeException.class, () -> pointService.usePoint(userId, amount));
+        assertThrows(IllegalArgumentException.class, () -> pointService.usePoint(userId, amount));
         // validatePointAmountBelowZero 호출 했음을 검증
         verify(pointValidator).validatePointAmountBelowZero(amount);
         // validateTotalPointAmount 호출 했음을 검증
@@ -150,12 +150,12 @@ class PointServiceTest {
         // given
         UserPoint userPoint = new UserPoint(userId, beforePoint, System.currentTimeMillis());
         doNothing().when(pointValidator).validatePointAmountBelowZero(usePoint);
-        when(pointRepository.findUserPointById(userId)).thenReturn(userPoint);
-        doThrow(new RuntimeException("사용 후 포인트가 0 미만"))
+        given(pointRepository.findUserPointById(userId)).willReturn(userPoint);
+        doThrow(new IllegalArgumentException("사용 후 포인트가 0 미만"))
             .when(pointValidator).validateTotalPointAmount(beforePoint, usePoint);
 
         // when, then
-        assertThrows(RuntimeException.class, () -> pointService.usePoint(userId, usePoint));
+        assertThrows(IllegalArgumentException.class, () -> pointService.usePoint(userId, usePoint));
 
         // validatePointAmountBelowZero 호출 했음을 검증
         verify(pointValidator).validatePointAmountBelowZero(usePoint);
@@ -174,11 +174,11 @@ class PointServiceTest {
         UserPoint userPoint = new UserPoint(userId, beforePoint, System.currentTimeMillis());
         doNothing().when(pointValidator).validatePointAmountBelowZero(usePoint);
 
-        when(pointRepository.findUserPointById(userId)).thenReturn(userPoint);
+        given(pointRepository.findUserPointById(userId)).willReturn(userPoint);
         doNothing().when(pointValidator).validateTotalPointAmount(beforePoint, usePoint);
 
         UserPoint afterUserPoint = new UserPoint(userId, beforePoint - usePoint, System.currentTimeMillis());
-        when(pointRepository.savePoint(userId, beforePoint - usePoint)).thenReturn(afterUserPoint);
+        given(pointRepository.savePoint(userId, beforePoint - usePoint)).willReturn(afterUserPoint);
 
         // when
         UserPoint useUserPoint = pointService.usePoint(userId, usePoint);

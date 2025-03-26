@@ -16,13 +16,13 @@ public class PointValidator {
 
     public void validatePointAmountBelowZero(long amount) {
         if (amount <= 0) {
-            throw new RuntimeException("포인트가 0 이하");
+            throw new IllegalArgumentException("포인트가 0 이하");
         }
     }
 
     public void validateTotalPointAmount(long beforePoint, long usePoint) {
         if (beforePoint - usePoint < 0) {
-            throw new RuntimeException("사용 후 포인트가 0 미만");
+            throw new IllegalArgumentException("사용 후 포인트가 0 미만");
         }
     }
 
