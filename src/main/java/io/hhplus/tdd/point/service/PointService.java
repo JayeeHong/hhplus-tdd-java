@@ -20,6 +20,11 @@ public class PointService {
     private final PointValidator pointValidator;
 
     public UserPoint getUserPoint(long id) {
+
+        if (id < 1L) {
+            throw new IllegalArgumentException("유효하지 않은 id 값");
+        }
+
         UserPoint userPoint = pointRepository.findUserPointById(id);
         boolean validUserPoint = pointValidator.validateUserPoint(userPoint);
         if (!validUserPoint) {

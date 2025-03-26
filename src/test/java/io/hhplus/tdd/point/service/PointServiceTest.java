@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -51,8 +52,8 @@ class PointServiceTest {
     void 사용자의_포인트를_정상_조회한다() {
         // given
         UserPoint userPoint = new UserPoint(userId, 1L, System.currentTimeMillis());
-        when(pointRepository.findUserPointById(userPoint.id())).thenReturn(userPoint);
-        when(pointValidator.validateUserPoint(userPoint)).thenReturn(true);
+        given(pointRepository.findUserPointById(userPoint.id())).willReturn(userPoint);
+        given(pointValidator.validateUserPoint(userPoint)).willReturn(true);
 
         // when
         UserPoint result = pointService.getUserPoint(userPoint.id());
@@ -63,7 +64,15 @@ class PointServiceTest {
         verify(pointValidator).validateUserPoint(userPoint);
     }
 
-    // 유저의 포인트 이력 조회
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1})
+    void 사용자id가_유효하지_않다면_사용자_포인트_조회_실패(long id) {
+        // given, when, then
+        assertThrows(IllegalArgumentException.class, () -> {
+            pointService.getUserPoint(id);
+        });
+    }
+
     @Test
     void 사용자의_포인트_히스토리를_정상_조회한다() {
         // given
